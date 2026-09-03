@@ -1,0 +1,14 @@
+{
+  // DNS Geo Check probe worker. Deployed non-interactively:
+  //   CLOUDFLARE_API_TOKEN=… CLOUDFLARE_ACCOUNT_ID=… npx wrangler deploy
+  // The shared secret is set separately and is NOT stored here:
+  //   printf %s "$SECRET" | npx wrangler secret put PROBE_SECRET
+  "name": "dns-geo-check",
+  "main": "worker.js",
+  "compatibility_date": "2026-08-01",
+  "observability": { "enabled": true },
+  "durable_objects": {
+    "bindings": [{ "name": "DNS_PROBE", "class_name": "DnsProbe" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DnsProbe"] }]
+}

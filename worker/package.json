@@ -1,0 +1,14 @@
+{
+  "name": "dns-geo-check-worker",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Cloudflare Worker + Durable Object that resolves a DNS record from 8 regions.",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "4.128.0"
+  }
+}

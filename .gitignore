@@ -1,0 +1,34 @@
+venv/
+__pycache__/
+*.pyc
+*.sock
+data/
+app/logs/*
+!app/logs/.gitkeep
+.env
+htmlcov/
+.pytest_cache/
+
+# Cloudflare Worker local state (the worker source IS committed).
+worker/node_modules/
+worker/.wrangler/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+# The graft wiring itself (AGENTS.md, opencode.json, .mcp.json, .claude/) IS
+# committed so teammates share it.
+graft/
+
+# AI assistant / local tooling config (not project code)
+CLAUDE.md
+claude.md
+agents.md
+opencode.jsonc
+.ignore
+.cursor/
+.cursorrules
+.windsurfrules
+.aider*
+
+# OS junk
+.DS_Store
+Thumbs.db

@@ -6,9 +6,9 @@ ran the lookup, the resolved IP(s), the CNAME chain, TTLs, and the query
 latency.
 
 This exists as the backend for the "DNS Geo Check" card on
-[client-info](https://lab.kudithipudi.org/client-info) — client-info is a
-static, no-backend page, so the fan-out and the Cloudflare API token have to
-live server-side.
+[net-tools](https://lab.kudithipudi.org/net-tools) — net-tools is a static,
+no-backend page, so the fan-out and the Cloudflare API token have to live
+server-side.
 
 ## What it is
 
@@ -73,7 +73,7 @@ Python 3.12 · FastAPI · gunicorn (uvicorn worker) · httpx · SQLite
 (aiosqlite, rate-limit table only). Cloudflare Worker: plain JS module worker
 + SQLite-backed Durable Object, `wrangler`. Per the lab standards in
 `/var/www/plans/standards.md`. No Jinja/Tailwind UI — a pure JSON API
-consumed by client-info.
+consumed by net-tools.
 
 ## Run locally
 
@@ -176,7 +176,7 @@ host-level `/etc/logrotate.d/lab-apps` policy.
   there is no outbound fetch to the target — so the hostname check is only a
   lightweight sanity filter, not a security boundary.
 - **Reflected content**: resolved IPs / colo strings in the response
-  originate from DNS and Cloudflare, but the client-info card still renders
+  originate from DNS and Cloudflare, but the net-tools card still renders
   every response-derived value as text (`escapeHTML`), never as markup.
 - **Abuse / cost control**: `POST /check` is capped per IP
   (`RATE_LIMIT_PER_MINUTE` / `RATE_LIMIT_WINDOW_SECONDS`, default 20/60s),

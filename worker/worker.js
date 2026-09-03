@@ -6,7 +6,7 @@
  * via DNS-over-HTTPS (1.1.1.1) from wherever `locationHint` placed it, times
  * the query, and reports the Cloudflare colo that actually served it.
  *
- * Backs the "DNS Geo Check" card on https://lab.kudithipudi.org/client-info,
+ * Backs the "DNS Geo Check" card on https://lab.kudithipudi.org/net-tools,
  * called server-side by /var/www/dns-geo-check (never from the browser).
  *
  * Deploy:  CLOUDFLARE_API_TOKEN=… CLOUDFLARE_ACCOUNT_ID=… npx wrangler deploy

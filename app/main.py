@@ -144,9 +144,9 @@ async def health():
 @app.get("/")
 async def index():
     # Pure JSON API with no UI of its own — it's consumed by the "DNS Geo
-    # Check" card on client-info. A visitor landing here directly gets sent
+    # Check" card on net-tools. A visitor landing here directly gets sent
     # to where the feature actually lives.
-    return RedirectResponse("https://lab.kudithipudi.org/client-info", status_code=302)
+    return RedirectResponse("https://lab.kudithipudi.org/net-tools", status_code=302)
 
 
 @app.exception_handler(Exception)

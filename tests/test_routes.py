@@ -31,10 +31,10 @@ async def test_health(client):
     assert resp.json() == {"status": "ok"}
 
 
-async def test_index_redirects_to_client_info(client):
+async def test_index_redirects_to_net_tools(client):
     resp = await client.get("/", follow_redirects=False)
     assert resp.status_code == 302
-    assert resp.headers["location"] == "https://lab.kudithipudi.org/client-info"
+    assert resp.headers["location"] == "https://lab.kudithipudi.org/net-tools"
 
 
 async def test_check_rejects_ip_address(client):

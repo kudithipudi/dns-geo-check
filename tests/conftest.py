@@ -13,6 +13,8 @@ async def client(tmp_path, monkeypatch):
     monkeypatch.setenv("DB_PATH", str(tmp_path / "app-test.db"))
     monkeypatch.setattr(main.settings, "worker_url", "https://worker.test/")
     monkeypatch.setattr(main.settings, "probe_secret", "test-secret")
+    # Pin index behaviour so tests don't depend on the ambient .env.
+    monkeypatch.setattr(main.settings, "index_redirect_url", "")
     # ASGITransport doesn't run lifespan hooks, so apply the schema here.
     await init_db(str(tmp_path / "app-test.db"))
     async with AsyncClient(transport=ASGITransport(app=main.app), base_url="http://test") as c:

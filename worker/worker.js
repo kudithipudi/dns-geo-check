@@ -21,6 +21,13 @@ const VALID_TYPES = new Set(["A", "AAAA"]);
 const TYPE_NAMES = { 1: "A", 2: "NS", 5: "CNAME", 6: "SOA", 12: "PTR", 15: "MX", 16: "TXT", 28: "AAAA", 33: "SRV", 257: "CAA" };
 const NAME_RE = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/i;
 
+// Bump this to force every region's Durable Object to be re-created, which
+// re-rolls `locationHint` placement (the hint is honoured only on a DO id's
+// first .get()). Placement is best-effort and drifts a little between wakes
+// anyway; `sam` in particular lands in EWR (Newark) on every generation
+// tried — Cloudflare treats that as the lowest-latency colo for the hint.
+const PROBE_GEN = "v3";
+
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), {
     status,
@@ -62,7 +69,7 @@ export default {
 
     const settled = await Promise.allSettled(
       REGIONS.map((region) => {
-        const id = env.DNS_PROBE.idFromName("probe-v1-" + region);
+        const id = env.DNS_PROBE.idFromName("probe-" + PROBE_GEN + "-" + region);
         const stub = env.DNS_PROBE.get(id, { locationHint: region });
         return stub.probe(name, type);
       })

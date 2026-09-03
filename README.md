@@ -56,16 +56,21 @@ minimize latency from the hinted location"), and when a Worker fetches
 reflects *"what 1.1.1.1 returns, resolved from `<colo>`"* — **not** "what a
 user in `<country>` sees" (1.1.1.1 does not send EDNS Client Subnet).
 
-**Geo-spread finding (acceptance test, 2026-09-03):** 8 regions →
-7 distinct colos — `wnam`→DFW, `enam`→EWR, `weur`→AMS, `eeur`→ARN,
-`apac-se`→HKG, `oc`→AKL, `afr`→MAD, `sam`→EWR. Best-effort placement is
-visible: `afr` lands in Madrid and `sam` in Newark (nearest well-connected
-colos, not the hinted continent). Regional DNS steering resolves correctly —
-e.g. `netflix.com` returns AWS `us-west-2` addresses from `oc`/AKL vs
+**Geo-spread finding (2026-09-03):** 8 regions consistently resolve to
+6–7 distinct colos. Placement is best-effort *and slightly fluid* — a
+hibernated DO can wake in a different in-region colo — so exact colos vary
+between runs and between `PROBE_GEN` generations. Representative:
+`wnam`→DFW/SJC/MIA, `enam`→EWR/IAD, `weur`→AMS/MAD/MRS, `eeur`→ARN/WAW,
+`apac-se`→HKG/SIN, `oc`→AKL/MEL/BNE, `afr`→MAD/CDG/AMS, and **`sam`→EWR on
+every generation tried (v1–v3)** — Cloudflare treats Newark as the
+lowest-latency colo for the `sam` hint (much South-American transit peers in
+the NY/Miami area), and there is no finer-grained South America hint.
+
+The per-region view is still meaningful: regional DNS steering resolves
+correctly — `netflix.com` returns AWS `us-west-2` addresses from `oc` vs
 `us-east-1` from `wnam`, and `www.microsoft.com`'s Akamai edge IP differs per
-colo. Recursion latency also varies (2ms warm cache vs 30–70ms cold). So the
-per-region view is meaningful; the "region" column is the hint, the "colo"
-column is ground truth.
+colo. The "region" column is the requested hint; the "colo" column is where
+the lookup actually ran.
 
 ## Stack
 

@@ -12,7 +12,12 @@ from app.config import get_settings
 from app.db import check_and_record_rate_limit, connect, init_db
 from app.models import CheckRequest, CheckResponse, RegionResult
 from app.services import worker_client
-from app.services.worker_client import WorkerError, WorkerTimeout, probe_all
+from app.services.worker_client import (
+    WorkerBadRequest,
+    WorkerError,
+    WorkerTimeout,
+    probe_all,
+)
 
 settings = get_settings()
 logging.basicConfig(
@@ -61,7 +66,11 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
-_LABEL_RE = re.compile(r"^[A-Za-z0-9_](?:[A-Za-z0-9_-]{0,61}[A-Za-z0-9_])?$")
+# One DNS label: alphanumeric ends, hyphens only in the interior (RFC 1123).
+# Kept in step with the Worker's own NAME_RE (worker/worker.js) so anything
+# this app accepts, the Worker also accepts — a mismatch would turn a
+# borderline hostname into a confusing 502 instead of a clean 400.
+_LABEL_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$")
 
 
 def _validate_hostname(raw: str) -> str:
@@ -121,6 +130,11 @@ async def check(payload: CheckRequest, request: Request) -> CheckResponse:
     except WorkerTimeout as exc:
         logger.error("probe worker timeout for %s %s: %s", name, payload.type, exc)
         raise HTTPException(status_code=504, detail="The probe timed out.") from exc
+    except WorkerBadRequest as exc:
+        logger.warning("probe worker rejected %s %s: %s", name, payload.type, exc)
+        raise HTTPException(
+            status_code=400, detail="That hostname was rejected by the resolver."
+        ) from exc
     except WorkerError as exc:
         logger.error("probe worker error for %s %s: %s", name, payload.type, exc)
         raise HTTPException(status_code=502, detail="The probe worker failed.") from exc

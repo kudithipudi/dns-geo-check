@@ -1,4 +1,4 @@
-from app.services.worker_client import WorkerError, WorkerTimeout
+from app.services.worker_client import WorkerBadRequest, WorkerError, WorkerTimeout
 
 _FAKE_RESULTS = {
     "name": "lab.kudithipudi.org",
@@ -35,6 +35,13 @@ async def test_index_redirects_to_net_tools(client):
     resp = await client.get("/", follow_redirects=False)
     assert resp.status_code == 302
     assert resp.headers["location"] == "https://lab.kudithipudi.org/net-tools"
+
+
+async def test_responses_are_not_cached(client):
+    # Cloudflare fronts this deploy and edge-caches responses lacking an origin
+    # cache header — every response here must opt out.
+    for resp in (await client.get("/health"), await client.get("/", follow_redirects=False)):
+        assert resp.headers["cache-control"] == "no-store"
 
 
 async def test_check_rejects_ip_address(client):
@@ -75,6 +82,15 @@ async def test_check_worker_error_is_502(client, monkeypatch):
     monkeypatch.setattr("app.main.probe_all", boom)
     resp = await client.post("/check", json={"name": "lab.kudithipudi.org", "type": "A"})
     assert resp.status_code == 502
+
+
+async def test_check_worker_bad_request_is_400(client, monkeypatch):
+    async def rejected(name, record_type):
+        raise WorkerBadRequest("Probe worker rejected the request (invalid name).")
+
+    monkeypatch.setattr("app.main.probe_all", rejected)
+    resp = await client.post("/check", json={"name": "lab.kudithipudi.org", "type": "A"})
+    assert resp.status_code == 400
 
 
 async def test_check_worker_timeout_is_504(client, monkeypatch):

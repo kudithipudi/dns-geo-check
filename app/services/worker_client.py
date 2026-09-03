@@ -19,6 +19,12 @@ class WorkerError(Exception):
     """The Worker returned a non-2xx status or an unparseable body."""
 
 
+class WorkerBadRequest(WorkerError):
+    """The Worker rejected the request payload (HTTP 4xx that isn't auth) —
+    e.g. a hostname that slipped past this app's sanity check but not the
+    Worker's. Surfaced to the caller as a 400, not a 502."""
+
+
 class WorkerTimeout(Exception):
     """The Worker did not respond within request_timeout_seconds."""
 
@@ -63,7 +69,15 @@ async def probe_all(name: str, record_type: str) -> dict:
     except httpx.HTTPError as exc:
         raise WorkerError(f"Could not reach the probe worker: {exc}") from exc
 
+    if resp.status_code == 400:
+        detail = ""
+        try:
+            detail = f" ({resp.json().get('error', '')})"
+        except ValueError:
+            pass
+        raise WorkerBadRequest(f"Probe worker rejected the request{detail}.")
     if resp.status_code >= 400:
+        # 401/403 (bad shared secret), 5xx, etc. — our problem, not the caller's.
         raise WorkerError(f"Probe worker returned HTTP {resp.status_code}.")
     try:
         return resp.json()

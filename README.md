@@ -26,6 +26,14 @@ Two pieces:
   Worker with the shared secret, and returns the aggregated JSON. Partial
   results are a `200` — one region timing out does not fail the whole call.
 
+`POST /check` status codes: `200` (incl. partial results), `400`
+(hostname failed the sanity check, or the Worker itself rejected it — the
+app's label regex is kept in step with the Worker's `NAME_RE`, so a name
+this app accepts the Worker accepts too), `422` (bad request body / `type`
+not `A`\|`AAAA`), `429` (per-IP rate limit), `502` (Worker unreachable or
+returned auth/5xx), `503` (`WORKER_URL`/`PROBE_SECRET` not configured),
+`504` (Worker did not respond within `REQUEST_TIMEOUT_SECONDS`).
+
 `POST /check {"name": "lab.kudithipudi.org", "type": "A"}` →
 ```json
 {

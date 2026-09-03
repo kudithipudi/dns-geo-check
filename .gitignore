@@ -3,6 +3,9 @@ __pycache__/
 *.pyc
 *.sock
 data/
+*.db
+*.db-shm
+*.db-wal
 app/logs/*
 !app/logs/.gitkeep
 .env
@@ -14,20 +17,39 @@ worker/node_modules/
 worker/.wrangler/
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
-# The graft wiring itself (AGENTS.md, opencode.json, .mcp.json, .claude/) IS
-# committed so teammates share it.
 graft/
 
-# AI assistant / local tooling config (not project code)
-CLAUDE.md
-claude.md
-agents.md
-opencode.jsonc
+# local search-tool ignore list
 .ignore
+
+# coding agent config (local only)
+.claude/
+.claude.json
+CLAUDE.md
+AGENTS.md
+.mcp.json
+opencode.json
+.opencode/
+.codex/
+codex.md
 .cursor/
 .cursorrules
-.windsurfrules
+.cursorignore
 .aider*
+.windsurfrules
+.windsurf/
+GEMINI.md
+.gemini/
+.github/copilot-instructions.md
+.copilot/
+.clinerules
+.cline/
+.roo/
+.kilocode/
+.trae/
+.serena/
+.continue/
+.codeium/
 
 # OS junk
 .DS_Store

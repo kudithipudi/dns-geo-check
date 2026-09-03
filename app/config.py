@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     worker_url: str = ""
     probe_secret: str = ""
 
+    # Where GET / sends a browser. This is a pure JSON API with no UI of its
+    # own; in the lab it fronts the "DNS Geo Check" card on net-tools, so a
+    # stray visitor is bounced there. Leave blank on a standalone deploy and
+    # GET / returns a small JSON pointer to the API instead.
+    index_redirect_url: str = ""
+
     # How long to wait on the Worker's aggregated response. The Worker itself
     # caps each region at ~10s and returns via Promise.allSettled (~12s worst
     # case), so this is the outer bound: Worker ~12s < this 20s < nginx 45s.

@@ -157,10 +157,19 @@ async def health():
 
 @app.get("/")
 async def index():
-    # Pure JSON API with no UI of its own — it's consumed by the "DNS Geo
-    # Check" card on net-tools. A visitor landing here directly gets sent
-    # to where the feature actually lives.
-    return RedirectResponse("https://lab.kudithipudi.org/net-tools", status_code=302)
+    # Pure JSON API with no UI of its own. If INDEX_REDIRECT_URL is set (in
+    # the lab it points at the net-tools card that consumes this), bounce a
+    # stray visitor there; otherwise hand back a short pointer to the API.
+    if settings.index_redirect_url:
+        return RedirectResponse(settings.index_redirect_url, status_code=302)
+    return {
+        "service": "dns-geo-check",
+        "docs": "https://github.com/kudithipudi/dns-geo-check",
+        "endpoints": {
+            "POST /check": {"name": "<hostname>", "type": "A | AAAA"},
+            "GET /health": "liveness",
+        },
+    }
 
 
 @app.exception_handler(Exception)

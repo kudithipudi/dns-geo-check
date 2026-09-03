@@ -31,10 +31,17 @@ async def test_health(client):
     assert resp.json() == {"status": "ok"}
 
 
-async def test_index_redirects_to_net_tools(client):
+async def test_index_returns_api_pointer_by_default(client):
+    resp = await client.get("/", follow_redirects=False)
+    assert resp.status_code == 200
+    assert resp.json()["service"] == "dns-geo-check"
+
+
+async def test_index_redirects_when_configured(client, monkeypatch):
+    monkeypatch.setattr("app.main.settings.index_redirect_url", "https://example.com/tools")
     resp = await client.get("/", follow_redirects=False)
     assert resp.status_code == 302
-    assert resp.headers["location"] == "https://lab.kudithipudi.org/net-tools"
+    assert resp.headers["location"] == "https://example.com/tools"
 
 
 async def test_responses_are_not_cached(client):

@@ -5,10 +5,11 @@ vantage points** and reports, per region: the Cloudflare colo that actually
 ran the lookup, the resolved IP(s), the CNAME chain, TTLs, and the query
 latency.
 
-This exists as the backend for the "DNS Geo Check" card on
-[net-tools](https://lab.kudithipudi.org/net-tools) — net-tools is a static,
-no-backend page, so the fan-out and the Cloudflare API token have to live
-server-side.
+It was built as the backend for the "DNS Geo Check" card on
+[net-tools](https://lab.kudithipudi.org/net-tools) — a static, no-backend
+page, so the fan-out and the shared secret have to live server-side — but
+it's a self-contained JSON API with no other dependency on that site, so
+you can clone and deploy it on its own (see [Deploy](#deploy)).
 
 ## What it is
 
@@ -84,9 +85,8 @@ the lookup actually ran.
 
 Python 3.12 · FastAPI · gunicorn (uvicorn worker) · httpx · SQLite
 (aiosqlite, rate-limit table only). Cloudflare Worker: plain JS module worker
-+ SQLite-backed Durable Object, `wrangler`. Per the lab standards in
-`/var/www/plans/standards.md`. No Jinja/Tailwind UI — a pure JSON API
-consumed by net-tools.
++ SQLite-backed Durable Object, `wrangler`. No Jinja/Tailwind UI — a pure
+JSON API.
 
 ## Run locally
 
@@ -104,6 +104,11 @@ venv/bin/python -m pytest
 ```
 
 ## Deploy
+
+The commands below use `/var/www/dns-geo-check` (the author's layout, behind
+nginx + systemd on Debian/Ubuntu). Adjust the path, unit name, and the
+`bind`/`chdir` in `gunicorn.conf.py` to wherever you put it. Nothing here
+requires that specific host — it's a stock gunicorn + unix-socket setup.
 
 ### 1. The Cloudflare Worker
 
@@ -171,6 +176,7 @@ location /dns-geo-check/ {
 | `WORKER_URL` | *(blank)* | The deployed probe Worker URL. `/check` → 503 until set. |
 | `PROBE_SECRET` | *(blank)* | Shared secret sent as `X-Probe-Secret`; matches the Worker secret. |
 | `REQUEST_TIMEOUT_SECONDS` | `20.0` | Outer timeout on the Worker's aggregated response. |
+| `INDEX_REDIRECT_URL` | *(blank)* | Where `GET /` sends a browser. Blank → `GET /` returns a small JSON pointer to the API. |
 | `LOG_LEVEL` | `info` | App log verbosity (`debug`/`info`/`warning`/...). |
 
 ## Logs
@@ -194,3 +200,7 @@ host-level `/etc/logrotate.d/lab-apps` policy.
 - **Abuse / cost control**: `POST /check` is capped per IP
   (`RATE_LIMIT_PER_MINUTE` / `RATE_LIMIT_WINDOW_SECONDS`, default 20/60s),
   recorded in SQLite so the limit holds across gunicorn workers.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

@@ -91,8 +91,8 @@ JSON API.
 ## Run locally
 
 ```bash
-python3 -m venv venv
-venv/bin/pip install -r requirements.txt
+uv venv venv
+uv pip install -r requirements.txt --python venv/bin/python
 cp .env.example .env          # then set WORKER_URL + PROBE_SECRET
 venv/bin/uvicorn app.main:app  # http://127.0.0.1:8000
 ```

@@ -2,7 +2,7 @@ import os
 
 bind = "unix:/var/www/dns-geo-check/dns-geo-check.sock"
 workers = 2
-worker_class = "uvicorn.workers.UvicornWorker"
+worker_class = "app.access_log.AccessLogUvicornWorker"
 chdir = "/var/www/dns-geo-check"
 accesslog = "app/logs/access.log"
 errorlog = "app/logs/app.log"
